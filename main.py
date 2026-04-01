@@ -43,5 +43,3 @@ keep_alive()
 TOKEN = os.environ.get('discord_token')
 if TOKEN:
     bot.run(TOKEN)
-else:
-    print("خطأ: لم يتم العثور على التوكن في Environment Variables")
