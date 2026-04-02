@@ -25,7 +25,7 @@ intents.voice_states = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # حط الـ ID حق الروم هنا
-VOICE_CHANNEL_ID = 1489005300911444050 
+VOICE_CHANNEL_ID = 1489192779321049199
 
 @bot.event
 async def on_ready():
