@@ -59,21 +59,7 @@ async def on_ready():
             print(f'Error connecting to voice: {e}')
 
 # 5. أوامر التشغيل والتحكم
-@bot.command(name='play')
-async def play(ctx, *, search):
-    if not ctx.message.author.voice:
-        await ctx.send("ادخل روم صوتي أول يا بطل!")
-        return
-    
-    vc = ctx.voice_client or await ctx.message.author.voice.channel.connect()
 
-    async with ctx.typing():
-        try:
-            player = await YTDLSource.from_url(search, loop=bot.loop, stream=True)
-            vc.play(player)
-            await ctx.send(f'جاري تشغيل: **{player.title}** 🎵')
-        except Exception as e:
-            await ctx.send(f"ما قدرت أشغلها من يوتيوب (حماية)، جرب رابط ساوند كلاود! الخطأ: {e}")
 
 @bot.command(name='stop')
 async def stop(ctx):
