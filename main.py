@@ -3,19 +3,20 @@ import os
 from flask import Flask
 from threading import Thread
 
-# نظام Keep Alive
+# سيرفر ويب بسيط للبقاء حياً على Render
 app = Flask('')
 @app.route('/')
-def home(): return "Bot is Online!"
+def home(): return "Bot is Alive!"
 def run(): app.run(host='0.0.0.0', port=8080)
 def keep_alive(): Thread(target=run).start()
 
-# إعدادات البوت الأساسية
+# إعدادات البوت
 intents = discord.Intents.default()
+intents.voice_states = True # ضروري لدخول الروم الصوتي
 client = discord.Client(intents=intents)
 
-# رقم الروم الصوتي حقك (تأكد إنه ID صحيح)
-VOICE_CHANNEL_ID = 1489192779321049199 
+# --- ضع رقم الروم الصوتي هنا ---
+VOICE_CHANNEL_ID = 1378484001668599859
 
 @client.event
 async def on_ready():
@@ -24,14 +25,14 @@ async def on_ready():
     if channel:
         try:
             await channel.connect()
-            print(f'Successfully joined: {channel.name}')
+            print(f'Successfully joined voice channel: {channel.name}')
         except Exception as e:
-            print(f'Could not join voice: {e}')
+            print(f'Error joining voice: {e}')
 
 keep_alive()
-# جلب التوكن من Environment
+# جلب التوكن من إعدادات Render
 token = os.environ.get('discord_token')
 if token:
     client.run(token)
 else:
-    print("Token not found in Render Environment Variables!")
+    print("CRITICAL: discord_token not found in Environment Variables!")
