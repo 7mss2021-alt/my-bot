@@ -1,10 +1,9 @@
 import discord
-from discord.ext import commands
 import os
 from flask import Flask
 from threading import Thread
 
-# نظام Keep Alive عشان الرندر ما يطفي البوت
+# نظام البقاء أونلاين لـ Render
 app = Flask('')
 @app.route('/')
 def home(): return "Bot is Online!"
@@ -13,26 +12,27 @@ def keep_alive(): Thread(target=run).start()
 
 # إعدادات البوت
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
+intents.voice_states = True  # مهم لدخول الروم
+client = discord.Client(intents=intents)
 
-# --- حط رقم الروم الصوتي حقك هنا ---
+# رقم الروم الصوتي حقك
 VOICE_CHANNEL_ID = 1489192779321049199 
 
-@bot.event
+@client.event
 async def on_ready():
-    print(f'Logged in as {bot.user.name}')
-    # محاولة دخول الروم فور التشغيل
-    channel = bot.get_channel(VOICE_CHANNEL_ID)
+    print(f'Logged in as {client.user}')
+    channel = client.get_channel(VOICE_CHANNEL_ID)
     if channel:
         try:
             await channel.connect()
-            print(f'Done! Joined {channel.name}')
+            print(f'Done! Connected to {channel.name}')
         except Exception as e:
             print(f'Voice Error: {e}')
 
 keep_alive()
+# تأكد إن الاسم في Environment بـ Render هو discord_token
 token = os.environ.get('discord_token')
 if token:
-    bot.run(token)
+    client.run(token)
 else:
-    print("No token found in Render settings!")
+    print("No token found!")
