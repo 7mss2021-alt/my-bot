@@ -6,20 +6,20 @@ import yt_dlp
 from flask import Flask
 from threading import Thread
 
-# 1. إعداد سيرفر Flask (عشان البوت ما ينام)
+# 1. إعداد سيرفر Flask للبقاء حياً (Keep Alive)
 app = Flask('')
 @app.route('/')
-def home(): return "Bot is Online and Alive!"
+def home(): return "Bot is Online!"
 def run(): app.run(host='0.0.0.0', port=8080)
 def keep_alive(): Thread(target=run).start()
 
-# 2. إعدادات الصوت (معدلة للبحث في ساوند كلاود لتجنب حجب يوتيوب)
+# 2. إعدادات الصوت (تم توجيه البحث لـ SoundCloud لتفادي حجب يوتيوب)
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'noplaylist': True,
     'quiet': True,
     'no_warnings': True,
-    'default_search': 'auto', # يبحث في يوتيوب وساوند كلاود
+    'default_search': 'scsearch', # البحث في ساوند كلاود افتراضياً
     'source_address': '0.0.0.0'
 }
 ffmpeg_options = {'options': '-vn'}
@@ -38,35 +38,30 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-# 3. إعدادات البوت والـ ID
-VOICE_CHANNEL_ID = 1489192779321049199  # <--- تأكد إن هذا رقم رومك الصوتي
+# 3. إعدادات البوت (تأكد من تفعيل Intents من موقع المطورين)
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# 4. حدث الدخول التلقائي أول ما يشتغل البوت
+# 4. حدث التشغيل
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    channel = bot.get_channel(VOICE_CHANNEL_ID)
-    if channel:
-        try:
-            # التحقق إذا كان البوت أصلاً في الروم عشان ما يسوي كراش
-            if not bot.voice_clients:
-                await channel.connect()
-                print(f'Connected to voice channel: {channel.name}')
-        except Exception as e:
-            print(f'Error connecting to voice: {e}')
 
-# 5. أوامر التشغيل والتحكم
-
-
-@bot.command(name='stop')
-async def stop(ctx):
-    if ctx.voice_client:
-        await ctx.voice_client.disconnect()
-        await ctx.send("تم الإيقاف، برب!")
-
-# 6. تشغيل كل شيء
-keep_alive()
-bot.run(os.environ.get('discord_token'))
+# 5. أمر التشغيل المطور
+@bot.command(name='play')
+async def play(ctx, *, search):
+    # التأكد أن المستخدم في روم صوتي
+    if not ctx.author.voice:
+        return await ctx.send("ادخل روم صوتي أول يا بطل!")
+    
+    # محاولة دخول الروم فوراً
+    channel = ctx.author.voice.channel
+    try:
+        vc = ctx.voice_client
+        if vc:
+            if vc.channel != channel:
+                await vc.move_to(channel)
+        else:
+            vc = await channel.connect()
+    except
