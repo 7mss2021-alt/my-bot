@@ -3,19 +3,19 @@ import os
 from flask import Flask
 from threading import Thread
 
-# سيرفر بسيط للبقاء حياً
+# سيرفر Keep Alive للبقاء أونلاين
 app = Flask('')
 @app.route('/')
-def home(): return "Bot is Online!"
+def home(): return "Online"
 def run(): app.run(host='0.0.0.0', port=8080)
 def keep_alive(): Thread(target=run).start()
 
-# إعدادات البوت
 intents = discord.Intents.default()
+intents.voice_states = True 
 client = discord.Client(intents=intents)
 
-# رقم الروم الصوتي (تأكد إنه ID صحيح)
-VOICE_CHANNEL_ID = 1489192779321049199
+# تأكد من رقم الروم الصوتي حقك
+VOICE_CHANNEL_ID = 1489192779321049199 
 
 @client.event
 async def on_ready():
@@ -24,15 +24,17 @@ async def on_ready():
     if channel:
         try:
             await channel.connect()
-            print(f'Successfully joined: {channel.name}')
+            print(f'Done! Joined: {channel.name}')
         except Exception as e:
             print(f'Voice Error: {e}')
 
 keep_alive()
-
-# جلب التوكن وتشغيل البوت
+# سحب التوكن من Render
 token = os.environ.get('discord_token')
 if token:
-    client.run(token)
+    try:
+        client.run(token)
+    except discord.errors.LoginFailure:
+        print("Error: The token provided is invalid!")
 else:
-    print("TOKEN NOT FOUND!")
+    print("Error: discord_token variable not found!")
