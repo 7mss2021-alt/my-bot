@@ -4,33 +4,32 @@ import os
 from flask import Flask
 from threading import Thread
 
-# 1. نظام الـ Keep Alive (عشان Render ما يطفي البوت)
+# سيرفر بسيط عشان Render يخلي البوت شغال 24 ساعة
 app = Flask('')
 @app.route('/')
 def home(): return "Bot is Online!"
 def run(): app.run(host='0.0.0.0', port=8080)
 def keep_alive(): Thread(target=run).start()
 
-# 2. إعدادات البوت
+# إعدادات البوت (صامتة تماماً)
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # --- ضع هنا رقم الروم الصوتي اللي تبيه يدخله ---
-VOICE_CHANNEL_ID = 1489192779321049199
+VOICE_CHANNEL_ID = 1489192779321049199 
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
-    # أول ما يشتغل البوت، يروح يدخل الروم فوراً
     channel = bot.get_channel(VOICE_CHANNEL_ID)
     if channel:
         try:
+            # يحاول يدخل الروم الصوتي فور تشغيله
             await channel.connect()
-            print(f'Done! Connected to: {channel.name}')
+            print(f'Connected successfully to: {channel.name}')
         except Exception as e:
-            print(f'Error: {e}')
+            print(f'Failed to connect to voice: {e}')
 
-# 3. تشغيل البوت
+# تشغيل البوت
 keep_alive()
-token = os.environ.get('discord_token')
-bot.run(token)
+bot.run(os.environ.get('discord_token'))
