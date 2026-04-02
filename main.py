@@ -15,7 +15,7 @@ intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
 # رقم الروم الصوتي (تأكد إنه ID صحيح)
-VOICE_CHANNEL_ID = 1378484001668599859
+VOICE_CHANNEL_ID = 1489192779321049199
 
 @client.event
 async def on_ready():
