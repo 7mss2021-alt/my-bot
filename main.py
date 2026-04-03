@@ -72,5 +72,7 @@ async def stay_connected():
 
 # --- تشغيل ---
 keep_alive()
+
 print("Bot is starting...")
+
 bot.run(TOKEN)
