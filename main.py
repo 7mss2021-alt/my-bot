@@ -1,40 +1,45 @@
 import discord
-import os
-from flask import Flask
-from threading import Thread
+from discord.ext import commands, tasks
 
-# سيرفر Keep Alive للبقاء أونلاين
-app = Flask('')
-@app.route('/')
-def home(): return "Online"
-def run(): app.run(host='0.0.0.0', port=8080)
-def keep_alive(): Thread(target=run).start()
+TOKEN = "YOUR_BOT_TOKEN"
+VOICE_CHANNEL_ID = 1489192779321049199  # حط ايدي الروم الصوتي هنا
 
 intents = discord.Intents.default()
-intents.voice_states = True 
-client = discord.Client(intents=intents)
+intents.voice_states = True
+intents.guilds = True
 
-# تأكد من رقم الروم الصوتي حقك
-VOICE_CHANNEL_ID = 1489192779321049199 
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f'Logged in as {client.user}')
-    channel = client.get_channel(VOICE_CHANNEL_ID)
-    if channel:
-        try:
-            await channel.connect()
-            print(f'Done! Joined: {channel.name}')
-        except Exception as e:
-            print(f'Voice Error: {e}')
+    print(f"Logged in as {bot.user}")
+    stay_connected.start()  # تشغيل المهمة التلقائية
 
-keep_alive()
-# سحب التوكن من Render
-token = os.environ.get('discord_token')
-if token:
-    try:
-        client.run(token)
-    except discord.errors.LoginFailure:
-        print("Error: The token provided is invalid!")
-else:
-    print("Error: discord_token variable not found!")
+@tasks.loop(seconds=30)
+async def stay_connected():
+    for guild in bot.guilds:
+        channel = bot.get_channel(VOICE_CHANNEL_ID)
+        if channel is None:
+            continue
+
+        vc = guild.voice_client
+
+        # إذا البوت مو داخل الروم → يدخل
+        if vc is None or not vc.is_connected():
+            try:
+                vc = await channel.connect()
+            except:
+                continue
+
+        # يتأكد إنه بنفس الروم
+        elif vc.channel.id != VOICE_CHANNEL_ID:
+            await vc.move_to(channel)
+
+        # يخليه دفن بدون ميوت
+        await guild.change_voice_state(
+            channel=channel,
+            self_deaf=True,
+            self_mute=False
+        )
+
+bot.run(TOKEN)
